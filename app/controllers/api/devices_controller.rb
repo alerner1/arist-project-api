@@ -1,6 +1,7 @@
 # add validations and appropriate json responses
 # adjust alive and report to use nested attributes instead?
 # figure out private methods for nested attributes
+# private method for find
 
 module Api
   class DevicesController < ApplicationController
@@ -18,6 +19,16 @@ module Api
       device = Device.find(params[:device_id])
       @report = Report.create(device: device, message: params[:message], sender: params[:sender])
       render json: @report
+    end
+
+    def update
+      device = Device.find(params[:device_id])
+      device.update(disabled_at: DateTime.now)
+      if device.save
+        render json: device, status: :accepted
+      else
+        render json: { error: 'failed to terminate device' }, status: :not_acceptable
+      end
     end
 
     private
