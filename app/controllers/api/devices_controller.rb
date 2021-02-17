@@ -4,6 +4,12 @@ module Api
       @device = Device.create(devices_params)
     end
 
+    def alive
+      device = Device.find(params[:device_id])
+      @heartbeat = Heartbeat.create(device: device)
+      render json: @heartbeat
+    end
+
     private
 
     def devices_params
