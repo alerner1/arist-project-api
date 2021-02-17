@@ -1,3 +1,7 @@
+# add validations and appropriate json responses
+# adjust alive and report to use nested attributes instead?
+# figure out private methods for nested attributes
+
 module Api
   class DevicesController < ApplicationController
     def create
@@ -8,6 +12,12 @@ module Api
       device = Device.find(params[:device_id])
       @heartbeat = Heartbeat.create(device: device)
       render json: @heartbeat
+    end
+
+    def report
+      device = Device.find(params[:device_id])
+      @report = Report.create(device: device, message: params[:message], sender: params[:sender])
+      render json: @report
     end
 
     private
