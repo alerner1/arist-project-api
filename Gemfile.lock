@@ -93,6 +93,7 @@ GEM
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
     pg (1.2.3)
+    phonelib (0.6.48)
     puma (5.2.1)
       nio4r (~> 2.0)
     racc (1.5.2)
@@ -155,6 +156,7 @@ DEPENDENCIES
   byebug
   listen (~> 3.3)
   pg (~> 1.1)
+  phonelib
   puma (~> 5.0)
   rack-cors
   rails (~> 6.1.2, >= 6.1.2.1)

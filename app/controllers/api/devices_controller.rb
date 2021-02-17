@@ -2,6 +2,7 @@
 # adjust alive and report to use nested attributes instead?
 # figure out private methods for nested attributes
 # private method for find
+# maybe rename methods to match routes rather than rest
 
 module Api
   class DevicesController < ApplicationController
