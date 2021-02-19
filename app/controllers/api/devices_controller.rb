@@ -33,18 +33,38 @@ module Api
     end
 
     def report
-      device = Device.find(params[:device_id])
-      @report = Report.create(device: device, message: params[:message], sender: params[:sender])
-      render json: @report
+      if Device.exists?(id: params[:device_id])
+        if check_authorization(params[:device_id])
+          device = find_device(params[:device_id])
+          @report = Report.create(device: device, message: params[:message], sender: params[:sender])
+          if @report.valid?
+            render json: {}, status: :created
+          else
+            render json: { error: 'failed to create report' }, status: :internal_server_error
+          end
+        else
+          render json: { error: 'device has been terminated' }, status: :internal_server_error
+        end
+      else
+        render json: { error: 'device not found' }, status: :internal_server_error
+      end
     end
 
     def terminate
-      device = Device.find(params[:device_id])
-      device.update(disabled_at: DateTime.now)
-      if device.save
-        render json: device, status: :accepted
+      if Device.exists?(id: params[:device_id])
+        if check_authorization(params[:device_id])
+          device = find_device(params[:device_id])
+          device.update(disabled_at: DateTime.now)
+          if device.save
+            render json: {}, status: :ok
+          else
+            render json: { error: 'failed to terminate device' }, status: :internal_server_error
+          end
+        else
+          render json: { error: 'device has already been terminated' }, status: :internal_server_error
+        end
       else
-        render json: { error: 'failed to terminate device' }, status: :not_acceptable
+        render json: { error: 'device not found' }, status: :internal_server_error
       end
     end
 
