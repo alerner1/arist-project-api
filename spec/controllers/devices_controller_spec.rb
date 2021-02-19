@@ -1,11 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Api::DevicesController, type: :controller do
-
-  # add more tests for specific messages and response codes
-  # add comments to explain what everything does
-
-
   let(:valid_device) do
     {
       device: {

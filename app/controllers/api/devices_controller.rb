@@ -1,8 +1,3 @@
-# add validations and appropriate json responses
-# adjust alive and report to use nested attributes instead?
-# figure out private methods for nested attributes
-# private method for find
-
 module Api
   class DevicesController < ApplicationController
     before_action :check_request_headers
