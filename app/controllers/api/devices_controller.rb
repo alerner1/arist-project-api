@@ -5,6 +5,10 @@
 
 module Api
   class DevicesController < ApplicationController
+    before_action :check_device_exists, except: [:register]
+    before_action :find_device, except: [:register]
+    before_action :check_authorization, except: [:register]
+
     def register
       @device = Device.create(devices_params)
       if @device.valid?
@@ -15,56 +19,29 @@ module Api
     end
 
     def alive
-      if Device.exists?(id: params[:device_id])
-        if check_authorization(params[:device_id])
-          device = find_device(params[:device_id])
-          @heartbeat = Heartbeat.create(device: device)
-          if @heartbeat.valid?
-            render json: {}, status: :created
-          else
-            render json: { error: 'failed to create heartbeat' }, status: :internal_server_error
-          end
-        else
-          render json: { error: 'device has been terminated' }, status: :internal_server_error
-        end
+      @heartbeat = Heartbeat.create(heartbeats_params)
+      if @heartbeat.valid?
+        render json: {}, status: :created
       else
-        render json: { error: 'device not found' }, status: :internal_server_error
+        render json: { error: 'failed to create heartbeat' }, status: :internal_server_error
       end
     end
 
     def report
-      if Device.exists?(id: params[:device_id])
-        if check_authorization(params[:device_id])
-          device = find_device(params[:device_id])
-          @report = Report.create(device: device, message: params[:message], sender: params[:sender])
-          if @report.valid?
-            render json: {}, status: :created
-          else
-            render json: { error: 'failed to create report' }, status: :internal_server_error
-          end
-        else
-          render json: { error: 'device has been terminated' }, status: :internal_server_error
-        end
+      @report = Report.create(reports_params)
+      if @report.valid?
+        render json: {}, status: :created
       else
-        render json: { error: 'device not found' }, status: :internal_server_error
+        render json: { error: 'failed to create report' }, status: :internal_server_error
       end
     end
 
     def terminate
-      if Device.exists?(id: params[:device_id])
-        if check_authorization(params[:device_id])
-          device = find_device(params[:device_id])
-          device.update(disabled_at: DateTime.now)
-          if device.save
-            render json: {}, status: :ok
-          else
-            render json: { error: 'failed to terminate device' }, status: :internal_server_error
-          end
-        else
-          render json: { error: 'device has already been terminated' }, status: :internal_server_error
-        end
+      @device.update(disabled_at: DateTime.now)
+      if @device.save
+        render json: {}, status: :ok
       else
-        render json: { error: 'device not found' }, status: :internal_server_error
+        render json: { error: 'failed to terminate device' }, status: :internal_server_error
       end
     end
 
@@ -74,13 +51,24 @@ module Api
       params.require(:device).permit(:phone_number, :carrier)
     end
 
-    def find_device(device_id)
-      device = Device.find(device_id)
+    def heartbeats_params
+      params.permit(:device_id)
     end
 
-    def check_authorization(device_id)
-      device = find_device(device_id)
-      device.disabled_at == nil ? true : false
+    def reports_params
+      params.permit(:device_id, :message, :sender)
+    end
+
+    def find_device
+      @device = Device.find(params[:device_id])
+    end
+
+    def check_device_exists
+      render json: { error: 'device not found' }, status: :internal_server_error unless Device.exists?(params[:device_id])
+    end
+
+    def check_authorization
+      render json: { error: 'unauthorized: device has been terminated' }, status: :internal_server_error unless @device.disabled_at == nil
     end
   end
 end
