@@ -5,6 +5,7 @@
 
 module Api
   class DevicesController < ApplicationController
+    before_action :check_request_headers
     before_action :check_device_exists, except: [:register]
     before_action :find_device, except: [:register]
     before_action :check_authorization, except: [:register]
@@ -66,10 +67,8 @@ module Api
       params.permit(:device_id, :message, :sender)
     end
 
-    # find a device by id
-    # returns device
-    def find_device
-      @device = Device.find(params[:device_id])
+    def check_request_headers
+      render json: { error: 'incorrect request headers' }, status: :internal_server_error unless request.headers["Content-Type"] == "application/json"
     end
 
     # check if a device exists
@@ -77,6 +76,13 @@ module Api
     def check_device_exists
       render json: { error: 'device not found' }, status: :internal_server_error unless Device.exists?(params[:device_id])
     end
+
+    # find a device by id
+    # returns device
+    def find_device
+      @device = Device.find(params[:device_id])
+    end
+
 
     # check if a device has previously been terminated
     # if device has been terminated, renders error message
