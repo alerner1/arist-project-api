@@ -6,7 +6,8 @@
 
 module Api
   class DevicesController < ApplicationController
-    def create
+
+    def register
       @device = Device.create(devices_params)
       if @device.valid?
         render json: @device, status: :created
@@ -27,7 +28,7 @@ module Api
       render json: @report
     end
 
-    def update
+    def terminate
       device = Device.find(params[:device_id])
       device.update(disabled_at: DateTime.now)
       if device.save
@@ -41,6 +42,15 @@ module Api
 
     def devices_params
       params.require(:device).permit(:phone_number, :carrier)
+    end
+
+    def find_device
+      device = Device.find(device_id)
+    end
+
+    def check_authorization(device_id)
+      find_device
+      render json: { error: 'device has been terminated' }, status: :internal_server_error unless device.disabled_at == nil
     end
   end
 end
