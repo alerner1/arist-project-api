@@ -8,6 +8,11 @@ module Api
   class DevicesController < ApplicationController
     def create
       @device = Device.create(devices_params)
+      if @device.valid?
+        render json: @device, status: :created
+      else
+        render json: { error: 'failed to register device' }, status: :not_acceptable
+      end
     end
 
     def alive
